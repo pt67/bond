@@ -1,74 +1,115 @@
-import { Image, StyleSheet, Platform } from 'react-native';
-
+import { Text, StyleSheet, View, Dimensions, Platform, TouchableOpacity } from 'react-native';
+import * as DocumentPicker from 'expo-document-picker';
 import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
+import FontAwesome from '@expo/vector-icons/FontAwesome';
+import React, { useState, useEffect } from 'react';
+
+
 
 export default function HomeScreen() {
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+
+useEffect(()=>{
+// Use dynamic import to prevent errors on the web.
+let PdfComponent = null;
+
+if (Platform.OS !== 'web') {
+  // Import react-native-pdf only for iOS/Android
+  try { PdfComponent = require('react-native-pdf'); } 
+  catch (error) {
+     console.error('Error loading PdfComponent:', error);
+}}
+
+}, []);
+
+
+
+
+
+
+  const uploadBook = async () => {
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: 'application/pdf', // Allow PDF files only
+        copyToCacheDirectory: true,
+      });
+
+      if (result.type === 'success') {
+        setIsLoading(true); // Show loading state
+        setSelectedFile(result); // Update the selected file state
+        setIsLoading(false); // Hide loading state after file is set
+      } else {
+        setIsLoading(false);
+      }
+    } catch (error) {
+      console.error('Error while picking document:', error);
+      setIsLoading(false);
+    }
+  };
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
+    <View style={styles.container}>
       <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
+        <ThemedText type="title">Book Store</ThemedText>
         <HelloWave />
       </ThemedView>
+
       <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12'
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
+        <ThemedText type="subtitle">Book One</ThemedText>
+        <ThemedText>To open developer tools.</ThemedText>
+
+        {isLoading ? (
+          <ThemedText>Loading PDF...</ThemedText>
+        ) : selectedFile ? (
+          Platform.OS !== 'web' && PdfComponent ? (
+            <PdfComponent source={{ uri: selectedFile.uri, cache: true }} style={styles.pdf} />
+          ) : (
+            <Text>PDF is not supported on this platform.</Text>
+          )
+        ) : (
+          <ThemedText>Select a PDF to view</ThemedText>
+        )}
       </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          Tap the Explore tab to learn more about what's included in this starter app.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          When you're ready, run{' '}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+
+      <TouchableOpacity style={styles.button} onPress={uploadBook}>
+        <FontAwesome.Button name="plus" backgroundColor="#3b5998">
+          Upload PDF
+        </FontAwesome.Button>
+      </TouchableOpacity>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   titleContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
+    padding: 30,
   },
   stepContainer: {
     gap: 8,
     marginBottom: 8,
+    padding: 10,
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  button: {
+    backgroundColor: '#3b5998',
+    padding: 12,
+    borderRadius: 8,
+    marginTop: 20,
+  },
+  pdf: {
+    flex: 1,
+    width: Dimensions.get('window').width,
+    height: Dimensions.get('window').height,
   },
 });
