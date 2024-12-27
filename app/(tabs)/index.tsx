@@ -1,105 +1,119 @@
-import { Text, StyleSheet, View, Dimensions, Platform, TouchableOpacity } from 'react-native';
-import * as DocumentPicker from 'expo-document-picker';
+import React, { useState } from 'react';
+import { Text, StyleSheet, View, Dimensions, TouchableOpacity, ActivityIndicator, FlatList, TextInput } from 'react-native';
 import { HelloWave } from '@/components/HelloWave';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
-import React, { useState, useEffect } from 'react';
+import {SafeAreaView, SafeAreaProvider} from 'react-native-safe-area-context';
+import {AScanner} from '../../components/EScanner';
+
+import {equipments} from './data';
+
+// import Linker from './linker';
+// import Pdf from 'react-native-pdf';
 
 
+const HomeScreen: React.FC = () => {
 
-export default function HomeScreen() {
-  const [selectedFile, setSelectedFile] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [text, onChangeText] = useState('Useless Text');
+  const [snumber, onChangeNumber] = useState('');
 
-
-useEffect(()=>{
-// Use dynamic import to prevent errors on the web.
-let PdfComponent = null;
-
-if (Platform.OS !== 'web') {
-  // Import react-native-pdf only for iOS/Android
-  try { PdfComponent = require('react-native-pdf'); } 
-  catch (error) {
-     console.error('Error loading PdfComponent:', error);
-}}
-
-}, []);
-
-
-
-
-
-
+ //console.log(equipments);
+//do the actionn on upload book
+interface UserInfo{
+  name: string;
+  serialnumber: string;
+} 
+  const uinfo: UserInfo[]= [];
   const uploadBook = async () => {
-    try {
-      const result = await DocumentPicker.getDocumentAsync({
-        type: 'application/pdf', // Allow PDF files only
-        copyToCacheDirectory: true,
-      });
-
-      if (result.type === 'success') {
-        setIsLoading(true); // Show loading state
-        setSelectedFile(result); // Update the selected file state
-        setIsLoading(false); // Hide loading state after file is set
-      } else {
-        setIsLoading(false);
-      }
-    } catch (error) {
-      console.error('Error while picking document:', error);
-      setIsLoading(false);
-    }
+    uinfo.push({
+      name:text,
+      serialnumber:snumber,
+    });
+    console.log(uinfo);
+    onChangeNumber('');
+    onChangeText('')
   };
+
+
+
 
   return (
     <View style={styles.container}>
       <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Book Store</ThemedText>
+        <ThemedText type="title">Submit Books</ThemedText>
         <HelloWave />
       </ThemedView>
 
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Book One</ThemedText>
-        <ThemedText>To open developer tools.</ThemedText>
+      <SafeAreaProvider>
+      <SafeAreaView>
+        <TextInput
+          style={styles.input}
+          onChangeText={onChangeText}
+          value={text}
+          placeholder = "Book Name"
+        />
+        <TextInput
+          style={styles.input}
+          onChangeText={onChangeNumber}
+          value={snumber}
+          placeholder="Serial Number"
+          keyboardType="numeric"
+        />
 
-        {isLoading ? (
-          <ThemedText>Loading PDF...</ThemedText>
-        ) : selectedFile ? (
-          Platform.OS !== 'web' && PdfComponent ? (
-            <PdfComponent source={{ uri: selectedFile.uri, cache: true }} style={styles.pdf} />
-          ) : (
-            <Text>PDF is not supported on this platform.</Text>
-          )
-        ) : (
-          <ThemedText>Select a PDF to view</ThemedText>
-        )}
-      </ThemedView>
-
-      <TouchableOpacity style={styles.button} onPress={uploadBook}>
-        <FontAwesome.Button name="plus" backgroundColor="#3b5998">
-          Upload PDF
+     <TouchableOpacity style={styles.button} >
+        <FontAwesome.Button name="paper-plane" backgroundColor="#3b5998" onPress={uploadBook}>
+          <ThemedText>Submit</ThemedText>
         </FontAwesome.Button>
       </TouchableOpacity>
+
+      <AScanner/>
+  
+      <FlatList data={equipments} 
+      keyExtractor={(item)=>item.id} 
+      renderItem={({ item }) => ( 
+        <View> 
+          <Text>{item.Serial_number}</Text> 
+        </View> 
+        )} 
+       />
+       
+      
+      </SafeAreaView>
+    </SafeAreaProvider>
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
+  input: {
+    height: 40,
+    margin: 12,
+    borderWidth: 1,
+    padding: 10,
+    width: 250
+  },
   container: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: '#fafa'
   },
   titleContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    padding: 30,
+    paddingTop: 80,
+    backgroundColor:'transparent'
+
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-    padding: 10,
+  loadingContainer: {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: [{ translateX: -50 }, { translateY: -50 }],
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   button: {
     backgroundColor: '#3b5998',
@@ -110,6 +124,8 @@ const styles = StyleSheet.create({
   pdf: {
     flex: 1,
     width: Dimensions.get('window').width,
-    height: Dimensions.get('window').height,
+    height: Dimensions.get('window').height - 100,
   },
 });
+
+export default HomeScreen;
