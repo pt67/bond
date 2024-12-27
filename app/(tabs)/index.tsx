@@ -1,86 +1,55 @@
 import React, { useState } from 'react';
-import { Text, StyleSheet, View, Dimensions, TouchableOpacity, ActivityIndicator, FlatList, TextInput } from 'react-native';
+import { Text, StyleSheet, View, Dimensions, TouchableOpacity, FlatList, TextInput } from 'react-native';
 import { HelloWave } from '@/components/HelloWave';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
-import {SafeAreaView, SafeAreaProvider} from 'react-native-safe-area-context';
-import {AScanner} from '../../components/EScanner';
-
-import {equipments} from './data';
-
-// import Linker from './linker';
-// import Pdf from 'react-native-pdf';
-
+import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
+import { equipments } from './data';
 
 const HomeScreen: React.FC = () => {
-
-  const [text, onChangeText] = useState('Useless Text');
+  const [machine, setMachineFound] = useState([]);
   const [snumber, onChangeNumber] = useState('');
 
- //console.log(equipments);
-//do the actionn on upload book
-interface UserInfo{
-  name: string;
-  serialnumber: string;
-} 
-  const uinfo: UserInfo[]= [];
-  const uploadBook = async () => {
-    uinfo.push({
-      name:text,
-      serialnumber:snumber,
-    });
-    console.log(uinfo);
-    onChangeNumber('');
-    onChangeText('')
+  const checkUser = async () => {
+    const checker = equipments.filter(e => e.Serial_number === parseInt(snumber));
+    setMachineFound(checker);
   };
-
-
-
 
   return (
     <View style={styles.container}>
       <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Submit Books</ThemedText>
+        <ThemedText type="title">Track Users</ThemedText>
         <HelloWave />
       </ThemedView>
 
       <SafeAreaProvider>
-      <SafeAreaView>
-        <TextInput
-          style={styles.input}
-          onChangeText={onChangeText}
-          value={text}
-          placeholder = "Book Name"
-        />
-        <TextInput
-          style={styles.input}
-          onChangeText={onChangeNumber}
-          value={snumber}
-          placeholder="Serial Number"
-          keyboardType="numeric"
-        />
+        <SafeAreaView>
+          <TextInput
+            style={styles.input}
+            onChangeText={onChangeNumber}
+            value={snumber}
+            placeholder="Serial Number"
+            keyboardType="numeric"
+          />
 
-     <TouchableOpacity style={styles.button} >
-        <FontAwesome.Button name="paper-plane" backgroundColor="#3b5998" onPress={uploadBook}>
-          <ThemedText>Submit</ThemedText>
-        </FontAwesome.Button>
-      </TouchableOpacity>
+          <TouchableOpacity style={styles.button} >
+            <FontAwesome.Button name="search" backgroundColor="#3b5998" onPress={checkUser}>
+              <ThemedText>Track</ThemedText>
+            </FontAwesome.Button>
+          </TouchableOpacity>
 
-      <AScanner/>
-  
-      <FlatList data={equipments} 
-      keyExtractor={(item)=>item.id} 
-      renderItem={({ item }) => ( 
-        <View> 
-          <Text>{item.Serial_number}</Text> 
-        </View> 
-        )} 
-       />
-       
-      
-      </SafeAreaView>
-    </SafeAreaProvider>
+          {machine.length > 0 ? (
+            <View style={styles.list}>
+              <Text>User: {machine[0].Name}</Text>
+              <Text>Location: {machine[0].Location}</Text>
+              <Text>Issued On: {machine[0].Issue_Date}</Text>
+            </View>
+          ) : (
+            <Text>No Users</Text>
+          )}
+        </SafeAreaView>
+      </SafeAreaProvider>
     </View>
   );
 };
@@ -91,29 +60,19 @@ const styles = StyleSheet.create({
     margin: 12,
     borderWidth: 1,
     padding: 10,
-    width: 250
+    width: 250,
   },
   container: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#fafa'
+    backgroundColor: '#fafa',
   },
   titleContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
     paddingTop: 80,
-    backgroundColor:'transparent'
-
-  },
-  loadingContainer: {
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    transform: [{ translateX: -50 }, { translateY: -50 }],
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: 'transparent',
   },
   button: {
     backgroundColor: '#3b5998',
@@ -121,11 +80,10 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginTop: 20,
   },
-  pdf: {
-    flex: 1,
-    width: Dimensions.get('window').width,
-    height: Dimensions.get('window').height - 100,
-  },
+  list:{
+    paddingTop: 12,
+
+  }
 });
 
 export default HomeScreen;
