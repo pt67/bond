@@ -10,21 +10,25 @@ import { IconSymbol } from '@/components/ui/IconSymbol';
 export default function TabTwoScreen() {
   return (
     <ParallaxScrollView
-      headerBackgroundColor={{ light: '#D0D0D0', dark: '#353636' }}
+      headerBackgroundColor={{ light: '#fafa', dark: '#00f0' }}
       headerImage={
         <IconSymbol
           size={310}
-          color="#808080"
-          name="chevron.left.forwardslash.chevron.right"
+          color="#fafa"
           style={styles.headerImage}
         />
       }>
       <ThemedView style={styles.titleContainer}>
         <ThemedText type="title">About</ThemedText>
-      </ThemedView>
-      <ThemedText>We are creating user tracker</ThemedText>
+        <ThemedText style={styles.aboutContent}>We are creating user tracker</ThemedText>
     
-
+      <Collapsible title="Learn More" style={styles.aboutContent}>
+        <ThemedText>
+          This is a user tracker app that allows you to track users by serial number.
+        </ThemedText>
+      </Collapsible>
+      </ThemedView>
+      
     </ParallaxScrollView>
   );
 }
@@ -37,7 +41,8 @@ const styles = StyleSheet.create({
     position: 'absolute',
   },
   titleContainer: {
-    flexDirection: 'row',
+    flexDirection: 'column',
     gap: 8,
   },
+
 });
